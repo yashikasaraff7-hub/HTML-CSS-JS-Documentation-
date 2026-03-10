@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SkillSwap — Browse Skills</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    .skill-card { cursor: pointer; }
+    .skill-card .cat-icon { font-size: 2.2rem; margin-bottom: 0.9rem; }
+    .skill-card .card-meta {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 0.6rem;
+    }
+    .skill-card h3 {
+      font-family: var(--font-head); font-size: 1.05rem; font-weight: 700;
+      margin-bottom: 0.35rem;
+    }
+    .skill-card p { color: var(--muted); font-size: 0.86rem; line-height: 1.5; margin-bottom: 1rem; }
+    .skill-card .footer-row {
+      display: flex; align-items: center; justify-content: space-between; margin-top: auto;
+    }
+    .skill-card { display: flex; flex-direction: column; }
+
+    .user-row {
+      display: flex; align-items: center; gap: 0.6rem; margin-bottom: 1rem;
+    }
+    .user-row .uname {
+      font-size: 0.87rem; font-weight: 600; color: var(--text);
+    }
+    .user-row .uloc { font-size: 0.77rem; color: var(--muted); }
+
+    .wants-tag {
+      display: flex; align-items: center; gap: 0.4rem;
+      font-size: 0.8rem; color: var(--muted);
+    }
+    .wants-tag strong { color: var(--accent2); }
+
+  
+    .cost-chip {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      background: rgba(245,197,24,0.1); border: 1px solid rgba(245,197,24,0.25);
+      border-radius: 99px; padding: 0.2rem 0.65rem;
+      font-size: 0.79rem; font-weight: 700; color: var(--gold);
+    }
+
+  
+    .stats-bar {
+      display: flex; gap: 2rem; flex-wrap: wrap;
+      padding: 1.5rem 2rem;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: var(--radius); margin-bottom: 2rem;
+    }
+    .stat-item { text-align: center; }
+    .stat-item .num {
+      font-family: var(--font-head); font-size: 1.6rem; font-weight: 800;
+      color: var(--accent1);
+    }
+    .stat-item .lbl { font-size: 0.78rem; color: var(--muted); margin-top: 0.1rem; }
+
+    @keyframes pulse {
+      0%,100% { box-shadow: none; }
+      50% { box-shadow: 0 0 0 4px rgba(245,197,24,0.25); }
+    }
+    .pulse { animation: pulse 0.6s ease; }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <a class="logo" href="skills.html">Skill<span>Swap</span></a>
+  <div class="nav-links">
+    <a href="skills.html" class="active">Browse Skills</a>
+    <a href="Profile.html">My Profile</a>
+    <a href="Reviews.html">Reviews</a>
+  </div>
+  <div class="nav-cta">
+    <div class="credit-badge">
+      <span class="coin">🪙</span>
+      <span class="js-credits">35</span> credits
+    </div>
+    <a href="Profile.html" class="btn btn-primary btn-sm">My Profile</a>
+  </div>
+</nav>
+
+
+<section class="hero">
+  <div class="label">Peer-to-Peer Learning</div>
+  <h1>Trade Skills,<br/><em>Grow Together</em></h1>
+  <p>Teach what you know. Learn what you don't. Exchange skills with peers — no money needed.</p>
+  <div style="display:flex;gap:0.75rem;justify-content:center;flex-wrap:wrap;">
+    <button class="btn btn-primary" onclick="openSwapModal({name:'Community',offer:'Your Skill',want:'New Skill',cost:5})">
+      🔄 Request a Swap
+    </button>
+    <a href="Profile.html" class="btn btn-secondary">View My Profile</a>
+  </div>
+</section>
+
+
+<div class="container page-body">
+
+  <div class="stats-bar fade-up">
+    <div class="stat-item"><div class="num">1,240</div><div class="lbl">Active Learners</div></div>
+    <div class="stat-item"><div class="num">380</div><div class="lbl">Skills Listed</div></div>
+    <div class="stat-item"><div class="num">2,910</div><div class="lbl">Swaps Completed</div></div>
+    <div class="stat-item"><div class="num">4.8 ⭐</div><div class="lbl">Avg. Rating</div></div>
+    <div style="margin-left:auto;display:flex;align-items:center;">
+      <button class="btn btn-orange btn-sm" onclick="SS.addCredits(10)">🎁 Claim Daily Bonus</button>
+    </div>
+  </div>
+
+  <div class="filter-bar fade-up fade-up-1">
+    <button class="filter-btn active" data-cat="all">All</button>
+    <button class="filter-btn" data-cat="tech">💻 Tech</button>
+    <button class="filter-btn" data-cat="language">🗣️ Language</button>
+    <button class="filter-btn" data-cat="music">🎵 Music</button>
+    <button class="filter-btn" data-cat="design">🎨 Design</button>
+    <button class="filter-btn" data-cat="fitness">💪 Fitness</button>
+    <button class="filter-btn" data-cat="cooking">🍳 Cooking</button>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="skillSearch" placeholder="Search skills…" />
+    </div>
+  </div>
+
+
+  <div class="grid-3" id="skillsGrid">
+
+    <div class="card skill-card fade-up fade-up-1" data-cat="tech">
+      <div class="cat-icon">🐍</div>
+      <div class="card-meta">
+        <span class="tag tag-teal">Tech</span>
+        <span class="cost-chip">🪙 5</span>
+      </div>
+      <h3>Python Programming</h3>
+      <p>Learn Python from scratch — variables, loops, functions, and building small projects together.</p>
+      <div class="user-row">
+        <div class="avatar" style="background:#1a2a3a;color:var(--accent1)">A</div>
+        <div>
+          <div class="uname">Yashika Saraf <span class="verified">Verified</span></div>
+          <div class="uloc">📍 Mumbai</div>
+        </div>
+      </div>
+      <div class="wants-tag">Wants: <strong>Spanish Lessons</strong></div>
+      <div class="footer-row" style="margin-top:1rem">
+        <div class="stars" data-rating="4">
+          <span class="star filled">★</span><span class="star filled">★</span>
+          <span class="star filled">★</span><span class="star filled">★</span><span class="star">★</span>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openSwapModal({name:'Aryan Mehta',offer:'Python',want:'Spanish',cost:5})">Swap</button>
+      </div>
+    </div>
+
+
+    <div class="card skill-card fade-up fade-up-2" data-cat="language">
+      <div class="cat-icon">🇪🇸</div>
+      <div class="card-meta">
+        <span class="tag tag-orange">Language</span>
+        <span class="cost-chip">🪙 5</span>
+      </div>
+      <h3>Spanish for Beginners</h3>
+      <p>Conversational Spanish from a native speaker. Covers greetings, travel phrases, and everyday vocabulary.</p>
+      <div class="user-row">
+        <div class="avatar" style="background:#1a2a2a;color:var(--accent2)">S</div>
+        <div>
+          <div class="uname">Sara López</div>
+          <div class="uloc">📍 Madrid</div>
+        </div>
+      </div>
+      <div class="wants-tag">Wants: <strong>Python / Data Skills</strong></div>
+      <div class="footer-row" style="margin-top:1rem">
+        <div class="stars" data-rating="5">
+          <span class="star filled">★</span><span class="star filled">★</span>
+          <span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openSwapModal({name:'Sara López',offer:'Spanish',want:'Python',cost:5})">Swap</button>
+      </div>
+    </div>
+
+
+    <div class="card skill-card fade-up fade-up-3" data-cat="design">
+      <div class="cat-icon">🎨</div>
+      <div class="card-meta">
+        <span class="tag tag-violet">Design</span>
+        <span class="cost-chip">🪙 7</span>
+      </div>
+      <h3>Figma UI/UX Design</h3>
+      <p>Hands-on Figma sessions: wireframes, prototypes, design systems, and real portfolio projects.</p>
+      <div class="user-row">
+        <div class="avatar" style="background:#1e1a2a;color:#a78bfa">P</div>
+        <div>
+          <div class="uname">Priya Sharma <span class="verified">Verified</span></div>
+          <div class="uloc">📍 Bangalore</div>
+        </div>
+      </div>
+      <div class="wants-tag">Wants: <strong>Guitar Lessons</strong></div>
+      <div class="footer-row" style="margin-top:1rem">
+        <div class="stars" data-rating="5">
+          <span class="star filled">★</span><span class="star filled">★</span>
+          <span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openSwapModal({name:'Priya Sharma',offer:'Figma Design',want:'Guitar',cost:7})">Swap</button>
+      </div>
+    </div>
+
+
+    <div class="card skill-card fade-up fade-up-4" data-cat="music">
+      <div class="cat-icon">🎸</div>
+      <div class="card-meta">
+        <span class="tag tag-gold">Music</span>
+        <span class="cost-chip">🪙 6</span>
+      </div>
+      <h3>Acoustic Guitar</h3>
+      <p>From absolute beginner to playing your first songs. Chords, strumming patterns, and music theory basics.</p>
+      <div class="user-row">
+        <div class="avatar" style="background:#1e1a10;color:var(--gold)">R</div>
+        <div>
+          <div class="uname">Rahul Verma</div>
+          <div class="uloc">📍 Delhi</div>
+        </div>
+      </div>
+      <div class="wants-tag">Wants: <strong>Yoga / Fitness</strong></div>
+      <div class="footer-row" style="margin-top:1rem">
+        <div class="stars" data-rating="4">
+          <span class="star filled">★</span><span class="star filled">★</span>
+          <span class="star filled">★</span><span class="star filled">★</span><span class="star">★</span>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openSwapModal({name:'Rahul Verma',offer:'Guitar',want:'Fitness',cost:6})">Swap</button>
+      </div>
+    </div>
+
+
+    <div class="card skill-card fade-up fade-up-5" data-cat="fitness">
+      <div class="cat-icon">🧘</div>
+      <div class="card-meta">
+        <span class="tag tag-teal">Fitness</span>
+        <span class="cost-chip">🪙 4</span>
+      </div>
+      <h3>Yoga &amp; Mindfulness</h3>
+      <p>Morning yoga flows, breathing techniques, and mindfulness practices for stress relief and flexibility.</p>
+      <div class="user-row">
+        <div class="avatar" style="background:#0f1e1a;color:var(--accent1)">N</div>
+        <div>
+          <div class="uname">Nisha Kapoor <span class="verified">Verified</span></div>
+          <div class="uloc">📍 Pune</div>
+        </div>
+      </div>
+      <div class="wants-tag">Wants: <strong>Web Development</strong></div>
+      <div class="footer-row" style="margin-top:1rem">
+        <div class="stars" data-rating="5">
+          <span class="star filled">★</span><span class="star filled">★</span>
+          <span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openSwapModal({name:'Nisha Kapoor',offer:'Yoga',want:'Web Dev',cost:4})">Swap</button>
+      </div>
+    </div>
+
+    <div class="card skill-card fade-up fade-up-6" data-cat="cooking">
+      <div class="cat-icon">🍱</div>
+      <div class="card-meta">
+        <span class="tag tag-orange">Cooking</span>
+        <span class="cost-chip">🪙 4</span>
+      </div>
+      <h3>Japanese Home Cooking</h3>
+      <p>Learn to cook ramen, sushi, takoyaki and more from a home chef with 10 years of experience.</p>
+      <div class="user-row">
+        <div class="avatar" style="background:#1a100f;color:var(--accent2)">K</div>
+        <div>
+          <div class="uname">Keiko Tanaka</div>
+          <div class="uloc">📍 Tokyo</div>
+        </div>
+      </div>
+      <div class="wants-tag">Wants: <strong>English Conversation</strong></div>
+      <div class="footer-row" style="margin-top:1rem">
+        <div class="stars" data-rating="4">
+          <span class="star filled">★</span><span class="star filled">★</span>
+          <span class="star filled">★</span><span class="star filled">★</span><span class="star">★</span>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openSwapModal({name:'Keiko Tanaka',offer:'Japanese Cooking',want:'English',cost:4})">Swap</button>
+      </div>
+    </div>
+
+
+    <div class="card skill-card fade-up fade-up-1" data-cat="tech">
+      <div class="cat-icon">📊</div>
+      <div class="card-meta">
+        <span class="tag tag-teal">Tech</span>
+        <span class="cost-chip">🪙 8</span>
+      </div>
+      <h3>Data Analysis with Excel</h3>
+      <p>Pivot tables, VLOOKUP, dashboards, and data visualisation for business and academics.</p>
+      <div class="user-row">
+        <div class="avatar" style="background:#1a2a1a;color:var(--accent1)">V</div>
+        <div>
+          <div class="uname">Vishal Agarwal</div>
+          <div class="uloc">📍 Chennai</div>
+        </div>
+      </div>
+      <div class="wants-tag">Wants: <strong>Graphic Design</strong></div>
+      <div class="footer-row" style="margin-top:1rem">
+        <div class="stars" data-rating="3">
+          <span class="star filled">★</span><span class="star filled">★</span>
+          <span class="star filled">★</span><span class="star">★</span><span class="star">★</span>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openSwapModal({name:'Vishal Agarwal',offer:'Data Analysis',want:'Design',cost:8})">Swap</button>
+      </div>
+    </div>
+
+  
+    <div class="card skill-card fade-up fade-up-2" data-cat="language">
+      <div class="cat-icon">🇯🇵</div>
+      <div class="card-meta">
+        <span class="tag tag-orange">Language</span>
+        <span class="cost-chip">🪙 6</span>
+      </div>
+      <h3>Japanese N5–N4</h3>
+      <p>Hiragana, Katakana, basic Kanji, and JLPT N5/N4 grammar structures with conversation practice.</p>
+      <div class="user-row">
+        <div class="avatar" style="background:#1a100f;color:var(--accent2)">H</div>
+        <div>
+          <div class="uname">Hiroshi Yamada</div>
+          <div class="uloc">📍 Osaka</div>
+        </div>
+      </div>
+      <div class="wants-tag">Wants: <strong>Cooking or Music</strong></div>
+      <div class="footer-row" style="margin-top:1rem">
+        <div class="stars" data-rating="4">
+          <span class="star filled">★</span><span class="star filled">★</span>
+          <span class="star filled">★</span><span class="star filled">★</span><span class="star">★</span>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openSwapModal({name:'Hiroshi Yamada',offer:'Japanese',want:'Cooking / Music',cost:6})">Swap</button>
+      </div>
+    </div>
+
+
+    <div class="card skill-card fade-up fade-up-3" data-cat="tech">
+      <div class="cat-icon">🌐</div>
+      <div class="card-meta">
+        <span class="tag tag-teal">Tech</span>
+        <span class="cost-chip">🪙 7</span>
+      </div>
+      <h3>HTML &amp; CSS Web Design</h3>
+      <p>Build beautiful responsive websites from scratch using semantic HTML5 and modern CSS layouts.</p>
+      <div class="user-row">
+        <div class="avatar" style="background:#0f1e1a;color:var(--accent1)">D</div>
+        <div>
+          <div class="uname">Divya Nair <span class="verified">Verified</span></div>
+          <div class="uloc">📍 Kochi</div>
+        </div>
+      </div>
+      <div class="wants-tag">Wants: <strong>Photography</strong></div>
+      <div class="footer-row" style="margin-top:1rem">
+        <div class="stars" data-rating="5">
+          <span class="star filled">★</span><span class="star filled">★</span>
+          <span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="openSwapModal({name:'Divya Nair',offer:'Web Design',want:'Photography',cost:7})">Swap</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<div class="modal-overlay" id="swapModal">
+  <div class="modal">
+    <div class="modal-head">
+      <h3>🔄 Request a Skill Swap</h3>
+      <button class="modal-close" data-close-modal>✕</button>
+    </div>
+
+    <div style="background:var(--bg);border-radius:12px;padding:1rem;margin-bottom:1.25rem;display:flex;gap:1rem;align-items:center;">
+      <div style="flex:1;text-align:center;">
+        <div style="font-size:0.75rem;color:var(--muted);margin-bottom:0.3rem">YOU OFFER</div>
+        <div style="font-weight:700;color:var(--accent1)" id="swapOffering">Python</div>
+      </div>
+      <div style="font-size:1.5rem;color:var(--muted)">⇄</div>
+      <div style="flex:1;text-align:center;">
+        <div style="font-size:0.75rem;color:var(--muted);margin-bottom:0.3rem">YOU RECEIVE</div>
+        <div style="font-weight:700;color:var(--accent2)" id="swapWanting">Spanish</div>
+      </div>
+    </div>
+
+    <p style="font-size:0.88rem;color:var(--muted);margin-bottom:1.25rem">
+      Sending swap request to <strong style="color:var(--text)" id="swapWith">—</strong>.
+      This will cost <strong style="color:var(--gold)"><span id="swapCost">5</span> credits</strong>.
+    </p>
+
+    <div class="form-group">
+      <label>Your availability</label>
+      <select>
+        <option>Weekday evenings (6–9 PM)</option>
+        <option>Weekend mornings (9 AM–12 PM)</option>
+        <option>Weekend afternoons</option>
+        <option>Flexible — discuss with partner</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Intro message</label>
+      <textarea id="swapMessage" placeholder="Hi! I'd love to swap skills with you. I'm a beginner in…"></textarea>
+    </div>
+
+    <div style="display:flex;gap:0.75rem;margin-top:1.5rem">
+      <button class="btn btn-secondary btn-sm" data-close-modal style="flex:1">Cancel</button>
+      <button class="btn btn-primary" id="confirmSwap" style="flex:2">Confirm Swap 🔄</button>
+    </div>
+  </div>
+</div>
+
+
+<footer>
+  <span class="logo">SkillSwap</span>
+  <span>© 2025 ITM Skills University · Peer-to-Peer Learning Platform</span>
+  <span>Made with ♥ by Students</span>
+</footer>
+
+<div id="toast"><span class="toast-icon"></span><span class="toast-msg"></span></div>
+
+<script src="app.js"></script>
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    initCategoryFilter({ filterBtns: '.filter-btn', cards: '.skill-card', attr: 'data-cat' });
+  });
+</script>
+</body>
+</html>

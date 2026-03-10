@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SkillSwap — Community Reviews</title>
+  <link rel="stylesheet" href="style.css" />
+  <style>
+
+    .reviews-layout {
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 1.75rem;
+      align-items: start;
+    }
+    @media (max-width: 820px) {
+      .reviews-layout { grid-template-columns: 1fr; }
+    }
+
+
+    .review-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.4rem;
+      margin-bottom: 1rem;
+      transition: border-color 0.2s, transform 0.2s;
+      animation: fadeUp 0.5s ease both;
+    }
+    .review-card:hover {
+      border-color: rgba(0,229,176,0.25);
+      transform: translateX(4px);
+    }
+    .review-card .reviewer {
+      display: flex; align-items: center; gap: 0.85rem;
+      margin-bottom: 0.85rem;
+    }
+    .reviewer .info .name {
+      font-weight: 700; font-size: 0.95rem;
+    }
+    .reviewer .info .swap-desc {
+      font-size: 0.78rem; color: var(--muted); margin-top: 0.15rem;
+    }
+    .reviewer .time {
+      margin-left: auto; font-size: 0.75rem; color: var(--muted);
+    }
+    .review-body {
+      font-size: 0.88rem; line-height: 1.7; color: var(--text);
+      border-left: 3px solid var(--border); padding-left: 0.9rem;
+      margin-bottom: 0.85rem; font-style: italic;
+    }
+    .review-meta {
+      display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap;
+    }
+    .helpful-btn {
+      font-size: 0.78rem; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 0.3rem 0.7rem; cursor: pointer;
+      color: var(--muted); transition: all 0.2s; font-family: var(--font-body);
+    }
+    .helpful-btn:hover { border-color: var(--accent1); color: var(--accent1); }
+    .helpful-btn.liked { border-color: var(--accent1); color: var(--accent1); background: rgba(0,229,176,0.07); }
+
+    
+    .score-card {
+      background: linear-gradient(135deg, rgba(0,229,176,0.08), rgba(124,58,237,0.06));
+      border: 1px solid rgba(0,229,176,0.2);
+      border-radius: 18px; padding: 1.75rem; text-align: center; margin-bottom: 1.5rem;
+    }
+    .score-card .big-score {
+      font-family: var(--font-head); font-size: 4rem; font-weight: 800;
+      color: var(--accent1); line-height: 1;
+    }
+    .score-card .out-of { font-size: 1rem; color: var(--muted); margin-bottom: 0.5rem; }
+    .score-card .stars { justify-content: center; margin-bottom: 0.75rem; font-size: 1.3rem; }
+    .score-card .total { font-size: 0.82rem; color: var(--muted); }
+
+  
+    .breakdown-row {
+      display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.55rem;
+    }
+    .breakdown-row .lbl { font-size: 0.8rem; color: var(--muted); width: 52px; }
+    .breakdown-row .bar-wrap { flex: 1; height: 8px; background: var(--bg); border-radius: 99px; overflow: hidden; }
+    .breakdown-row .bar-fill { height: 100%; background: var(--gold); border-radius: 99px; transition: width 0.8s ease; }
+    .breakdown-row .pct { font-size: 0.78rem; color: var(--muted); width: 32px; text-align: right; }
+
+    
+    .review-form-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 18px; padding: 1.5rem; margin-bottom: 1.5rem;
+    }
+    .review-form-card h3 {
+      font-family: var(--font-head); font-size: 1rem; font-weight: 700; margin-bottom: 1.1rem;
+    }
+    .star-input { display: flex; gap: 4px; margin: 0.4rem 0 1rem; }
+    .star-input .star {
+      font-size: 1.6rem; cursor: pointer; color: #2a3550;
+      transition: color 0.15s, transform 0.15s;
+    }
+
+  
+    .review-controls {
+      display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem;
+    }
+    .sort-btn {
+      padding: 0.38rem 0.9rem; border-radius: 99px; font-size: 0.8rem; font-weight: 600;
+      background: var(--card); border: 1px solid var(--border); color: var(--muted);
+      cursor: pointer; font-family: var(--font-body); transition: all 0.2s;
+    }
+    .sort-btn.active, .sort-btn:hover {
+      background: rgba(0,229,176,0.1); border-color: var(--accent1); color: var(--accent1);
+    }
+    .filter-star-btn {
+      padding: 0.38rem 0.8rem; border-radius: 99px; font-size: 0.8rem; font-weight: 600;
+      background: var(--card); border: 1px solid var(--border); color: var(--muted);
+      cursor: pointer; font-family: var(--font-body); transition: all 0.2s;
+    }
+    .filter-star-btn.active {
+      background: rgba(245,197,24,0.12); border-color: var(--gold); color: var(--gold);
+    }
+
+  
+    .outcome-tag {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      font-size: 0.72rem; font-weight: 600; padding: 0.18rem 0.55rem; border-radius: 99px;
+    }
+    .ot-learned  { background: rgba(0,229,176,0.1); color: var(--accent1); }
+    .ot-fun      { background: rgba(245,197,24,0.1); color: var(--gold); }
+    .ot-recommend{ background: rgba(124,58,237,0.1); color: #a78bfa; }
+
+
+    .top-reviewer {
+    display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 0;
+    border-bottom: 1px solid var(--border);
+    }
+    .top-reviewer:last-child { border-bottom: none; }
+    .top-reviewer .tr-info .tr-name { font-weight: 600; font-size: 0.87rem; }
+    .top-reviewer .tr-info .tr-swaps { font-size: 0.75rem; color: var(--muted); }
+    .top-reviewer .tr-score {
+      margin-left: auto; font-family: var(--font-head); font-weight: 700;
+      font-size: 0.95rem; color: var(--gold);
+    }
+  </style>
+</head>
+<body>
+<nav class="navbar">
+  <a class="logo" href="skills.html">Skill<span>Swap</span></a>
+  <div class="nav-links">
+    <a href="skills.html">Browse Skills</a>
+    <a href="Profile.html">My Profile</a>
+    <a href="Reviews.html" class="active">Reviews</a>
+  </div>
+  <div class="nav-cta">
+    <div class="credit-badge">
+      <span class="coin">🪙</span>
+      <span class="js-credits">35</span> credits
+    </div>
+    <a href="skills.html" class="btn btn-primary btn-sm">Browse Skills</a>
+  </div>
+</nav>
+
+
+<section class="hero" style="padding:2rem 2rem 2rem">
+  <div class="label">Community Reviews</div>
+  <h1>What Learners <em>Say</em></h1>
+  <p>Real experiences from real swaps. Honest feedback that helps everyone grow.</p>
+</section>
+
+
+<div class="container page-body">
+  <div class="reviews-layout">
+
+
+    <div>
+<div class="review-controls fade-up">
+        <span style="font-size:0.82rem;color:var(--muted)">Sort by:</span>
+        <button class="sort-btn active" onclick="sortReviews('recent', this)">🕒 Most Recent</button>
+        <button class="sort-btn" onclick="sortReviews('rating', this)">⭐ Highest Rated</button>
+        <button class="sort-btn" onclick="sortReviews('helpful', this)">👍 Most Helpful</button>
+        <span style="margin-left:auto;font-size:0.82rem;color:var(--muted)">Filter:</span>
+        <button class="filter-star-btn" data-stars="5" onclick="filterByStars(5, this)">★★★★★</button>
+        <button class="filter-star-btn" data-stars="4" onclick="filterByStars(4, this)">★★★★</button>
+        <button class="filter-star-btn" data-stars="all" onclick="filterByStars('all', this)">All</button>
+      </div>
+
+
+      <div id="reviewsContainer">
+
+        <div class="review-card" data-stars="5" data-sort-recent="5" data-sort-helpful="12">
+          <div class="reviewer">
+            <div class="avatar" style="background:#1a100f;color:var(--accent2)">S</div>
+            <div class="info">
+              <div class="name">Sara López <span class="verified">Verified</span></div>
+              <div class="swap-desc">🔄 Taught: Spanish · Learned: Python</div>
+            </div>
+            <div class="time">Mar 1, 2025</div>
+          </div>
+          <div class="stars" style="margin-bottom:0.65rem">
+            <span class="star filled">★</span><span class="star filled">★</span>
+            <span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span>
+          </div>
+          <div class="review-body">
+            Yashika is an absolutely fantastic teacher. She broke down Python concepts in a way that was so easy to understand. We had 4 sessions and I went from zero to writing my first data analysis script. Highly recommend!
+          </div>
+          <div class="review-meta">
+            <span class="outcome-tag ot-learned">✅ Achieved Goal</span>
+            <span class="outcome-tag ot-fun">🎉 Enjoyed Sessions</span>
+            <span class="outcome-tag ot-recommend">👍 Would Recommend</span>
+            <button class="helpful-btn" onclick="likeReview(this)">👍 Helpful (12)</button>
+          </div>
+        </div>
+
+        <div class="review-card" data-stars="5" data-sort-recent="4" data-sort-helpful="9">
+          <div class="reviewer">
+            <div class="avatar" style="background:#1e1a2a;color:#a78bfa">P</div>
+            <div class="info">
+              <div class="name">Priya Sharma <span class="verified">Verified</span></div>
+              <div class="swap-desc">🔄 Taught: Figma Design · Learned: HTML/CSS</div>
+            </div>
+            <div class="time">Mar 5, 2025</div>
+          </div>
+          <div class="stars" style="margin-bottom:0.65rem">
+            <span class="star filled">★</span><span class="star filled">★</span>
+            <span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span>
+          </div>
+          <div class="review-body">
+            The swap was incredibly smooth. Yashika prepared mini-projects for each session which made learning so practical. The time-bank system works perfectly for this kind of exchange.
+          </div>
+          <div class="review-meta">
+            <span class="outcome-tag ot-learned">✅ Achieved Goal</span>
+            <span class="outcome-tag ot-recommend">👍 Would Recommend</span>
+            <button class="helpful-btn" onclick="likeReview(this)">👍 Helpful (9)</button>
+          </div>
+        </div>
+
+        <div class="review-card" data-stars="4" data-sort-recent="3" data-sort-helpful="6">
+          <div class="reviewer">
+            <div class="avatar" style="background:#1a2a1a;color:var(--accent1)">V</div>
+            <div class="info">
+              <div class="name">Vishal Agarwal</div>
+              <div class="swap-desc">🔄 Taught: Excel · Learned: React</div>
+            </div>
+            <div class="time">Feb 22, 2025</div>
+          </div>
+          <div class="stars" style="margin-bottom:0.65rem">
+            <span class="star filled">★</span><span class="star filled">★</span>
+            <span class="star filled">★</span><span class="star filled">★</span><span class="star">★</span>
+          </div>
+          <div class="review-body">
+            Really patient and knowledgeable. Yashika sometimes went a bit fast for me but always circled back when I asked. Would have loved more exercises but overall a great experience for 4 credits!
+          </div>
+          <div class="review-meta">
+            <span class="outcome-tag ot-fun">🎉 Enjoyed Sessions</span>
+            <button class="helpful-btn" onclick="likeReview(this)">👍 Helpful (6)</button>
+          </div>
+        </div>
+
+        <div class="review-card" data-stars="5" data-sort-recent="2" data-sort-helpful="15">
+          <div class="reviewer">
+            <div class="avatar" style="background:#0f1e1a;color:var(--accent1)">N</div>
+            <div class="info">
+              <div class="name">Nisha Kapoor <span class="verified">Verified</span></div>
+              <div class="swap-desc">🔄 Taught: Yoga · Learned: Web Dev</div>
+            </div>
+            <div class="time">Feb 10, 2025</div>
+          </div>
+          <div class="stars" style="margin-bottom:0.65rem">
+            <span class="star filled">★</span><span class="star filled">★</span>
+            <span class="star filled">★</span><span class="star filled">★</span><span class="star filled">★</span>
+          </div>
+          <div class="review-body">
+            I was nervous about peer teaching but SkillSwap made it so comfortable. She was warm, structured, and genuinely cared about my progress. I built my first portfolio website after just 3 sessions. 10/10!
+          </div>
+          <div class="review-meta">
+            <span class="outcome-tag ot-learned">✅ Achieved Goal</span>
+            <span class="outcome-tag ot-fun">🎉 Enjoyed Sessions</span>
+            <span class="outcome-tag ot-recommend">👍 Would Recommend</span>
+            <button class="helpful-btn" onclick="likeReview(this)">👍 Helpful (15)</button>
+          </div>
+        </div>
+
+        <div class="review-card" data-stars="4" data-sort-recent="1" data-sort-helpful="4">
+          <div class="reviewer">
+            <div class="avatar" style="background:#1a100f;color:var(--accent2)">K</div>
+            <div class="info">
+              <div class="name">Keiko Tanaka</div>
+              <div class="swap-desc">🔄 Taught: Japanese Cooking · Learned: English</div>
+            </div>
+            <div class="time">Jan 30, 2025</div>
+          </div>
+          <div class="stars" style="margin-bottom:0.65rem">
+            <span class="star filled">★</span><span class="star filled">★</span>
+            <span class="star filled">★</span><span class="star filled">★</span><span class="star">★</span>
+          </div>
+          <div class="review-body">
+            Good sessions, clear explanations. Yashika was very patient with my English. I would give 5 stars but we had a scheduling conflict once.
+          </div>
+          <div class="review-meta">
+            <span class="outcome-tag ot-learned">✅ Achieved Goal</span>
+            <button class="helpful-btn" onclick="likeReview(this)">👍 Helpful (4)</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    
+    <aside>
+
+      <div class="score-card fade-up">
+        <div class="big-score">4.9</div>
+        <div class="out-of">out of 5</div>
+        <div class="stars">★★★★★</div>
+        <div class="total">Based on 24 reviews</div>
+      </div>
+
+    
+      <div class="card fade-up fade-up-1" style="margin-bottom:1.5rem">
+        <h4 style="font-family:var(--font-head);margin-bottom:1rem;font-size:0.95rem">Rating Breakdown</h4>
+        <div class="breakdown-row">
+          <div class="lbl">5 ★</div>
+          <div class="bar-wrap"><div class="bar-fill" id="bar5" style="width:0%"></div></div>
+          <div class="pct">83%</div>
+        </div>
+        <div class="breakdown-row">
+          <div class="lbl">4 ★</div>
+          <div class="bar-wrap"><div class="bar-fill" id="bar4" style="width:0%"></div></div>
+          <div class="pct">13%</div>
+        </div>
+        <div class="breakdown-row">
+          <div class="lbl">3 ★</div>
+          <div class="bar-wrap"><div class="bar-fill" id="bar3" style="width:0%;background:var(--accent2)"></div></div>
+          <div class="pct">4%</div>
+        </div>
+        <div class="breakdown-row">
+          <div class="lbl">2 ★</div>
+          <div class="bar-wrap"><div class="bar-fill" id="bar2" style="width:0%;background:var(--muted)"></div></div>
+          <div class="pct">0%</div>
+        </div>
+        <div class="breakdown-row">
+          <div class="lbl">1 ★</div>
+          <div class="bar-wrap"><div class="bar-fill" id="bar1" style="width:0%;background:var(--muted)"></div></div>
+          <div class="pct">0%</div>
+        </div>
+      </div>
+
+      
+      <div class="review-form-card fade-up fade-up-2">
+        <h3>✍️ Leave a Review</h3>
+        <div class="form-group">
+          <label>Your Name</label>
+          <input type="text" id="revName" placeholder="Your name" />
+        </div>
+        <div class="form-group">
+          <label>Swap partner</label>
+          <input type="text" id="revPartner" placeholder="Who did you swap with?" />
+        </div>
+        <div>
+          <label style="display:block;font-size:0.82rem;font-weight:600;color:var(--muted);margin-bottom:0.3rem">Your Rating</label>
+          <div class="stars star-input" id="reviewStars">
+            <span class="star" data-v="1">★</span>
+            <span class="star" data-v="2">★</span>
+            <span class="star" data-v="3">★</span>
+            <span class="star" data-v="4">★</span>
+            <span class="star" data-v="5">★</span>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Your Review</label>
+          <textarea id="revText" placeholder="Share your experience with this swap…"></textarea>
+        </div>
+        <div class="form-group">
+          <label>Skill Outcomes</label>
+          <div style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.3rem" id="outcomePicker">
+            <button class="filter-btn" data-outcome="achieved" onclick="toggleOutcome(this)">✅ Achieved Goal</button>
+            <button class="filter-btn" data-outcome="fun" onclick="toggleOutcome(this)">🎉 Enjoyed</button>
+            <button class="filter-btn" data-outcome="recommend" onclick="toggleOutcome(this)">👍 Recommend</button>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-block" onclick="submitReview()">Submit Review</button>
+      </div>
+
+      
+      <div class="card fade-up fade-up-3">
+        <h4 style="font-family:var(--font-head);font-size:0.95rem;margin-bottom:1rem">🏆 Top Community Members</h4>
+        <div class="top-reviewer">
+          <div class="avatar" style="background:#1a100f;color:var(--accent2)">S</div>
+          <div class="tr-info">
+            <div class="tr-name">Sara Sharma</div>
+            <div class="tr-swaps">18 swaps · 4 skills</div>
+          </div>
+          <div class="tr-score">⭐ 5.0</div>
+        </div>
+        <div class="top-reviewer">
+          <div class="avatar" style="background:#1e1a2a;color:#a78bfa">P</div>
+          <div class="tr-info">
+            <div class="tr-name">Priya Sharma</div>
+            <div class="tr-swaps">14 swaps · 3 skills</div>
+          </div>
+          <div class="tr-score">⭐ 4.9</div>
+        </div>
+        <div class="top-reviewer">
+          <div class="avatar" style="background:#0f1e1a;color:var(--accent1)">N</div>
+          <div class="tr-info">
+            <div class="tr-name">Nisha Kapoor</div>
+            <div class="tr-swaps">11 swaps · 2 skills</div>
+          </div>
+          <div class="tr-score">⭐ 4.8</div>
+        </div>
+        <div class="top-reviewer">
+          <div class="avatar" style="background:#1a2a3a;color:var(--accent1)">A</div>
+          <div class="tr-info">
+            <div class="tr-name">Aryan Mehta</div>
+            <div class="tr-swaps">24 swaps · 5 skills</div>
+          </div>
+          <div class="tr-score">⭐ 4.9</div>
+        </div>
+      </div>
+
+    </aside>
+  </div>
+</div>
+
+
+<footer>
+  <span class="logo">SkillSwap</span>
+  <span>© 2025 ITM Skills University · Peer-to-Peer Learning Platform</span>
+  <span>Made with ♥ by Students</span>
+</footer>
+
+<div id="toast"><span class="toast-icon"></span><span class="toast-msg"></span></div>
+
+<script src="app.js"></script>
+<script>
+let reviewRating = 0;
+const selectedOutcomes = new Set();
+
+document.addEventListener('DOMContentLoaded', () => {
+  setTimeout(() => {
+    document.getElementById('bar5').style.width = '83%';
+    document.getElementById('bar4').style.width = '13%';
+    document.getElementById('bar3').style.width = '4%';
+    document.getElementById('bar2').style.width = '0%';
+    document.getElementById('bar1').style.width = '0%';
+  }, 400);
+
+
+  const stars = document.querySelectorAll('#reviewStars .star');
+  stars.forEach((s, i) => {
+    s.addEventListener('mouseenter', () => paintForm(i + 1, true));
+    s.addEventListener('mouseleave', () => paintForm(reviewRating, false));
+    s.addEventListener('click', () => { reviewRating = i + 1; paintForm(reviewRating, false); });
+  });
+
+  function paintForm(n, hover) {
+    stars.forEach((s, i) => {
+      s.classList.toggle('filled', i < n);
+    });
+  }
+});
+
+function toggleOutcome(btn) {
+  const key = btn.dataset.outcome;
+  if (selectedOutcomes.has(key)) {
+    selectedOutcomes.delete(key);
+    btn.classList.remove('active');
+  } else {
+    selectedOutcomes.add(key);
+    btn.classList.add('active');
+  }
+}
+
+function likeReview(btn) {
+  if (btn.classList.contains('liked')) { showToast('Already marked helpful!', 'info'); return; }
+  btn.classList.add('liked');
+  const match = btn.textContent.match(/\((\d+)\)/);
+  if (match) {
+    const n = parseInt(match[1]) + 1;
+    btn.textContent = `👍 Helpful (${n})`;
+  }
+  showToast('Marked as helpful 👍');
+}
+
+function filterByStars(stars, btn) {
+  document.querySelectorAll('.filter-star-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  document.querySelectorAll('.review-card').forEach(card => {
+    const s = parseInt(card.dataset.stars);
+    card.style.display = (stars === 'all' || s === stars) ? '' : 'none';
+  });
+}
+
+function sortReviews(by, btn) {
+  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  const container = document.getElementById('reviewsContainer');
+  const cards = [...container.querySelectorAll('.review-card')];
+  cards.sort((a, b) => {
+    if (by === 'rating')  return parseInt(b.dataset.stars) - parseInt(a.dataset.stars);
+    if (by === 'helpful') return parseInt(b.dataset.sortHelpful) - parseInt(a.dataset.sortHelpful);
+    return parseInt(b.dataset.sortRecent) - parseInt(a.dataset.sortRecent);
+  });
+  cards.forEach(c => container.appendChild(c));
+}
+
+function submitReview() {
+  const name    = document.getElementById('revName').value.trim();
+  const partner = document.getElementById('revPartner').value.trim();
+  const text    = document.getElementById('revText').value.trim();
+
+  if (!name)    { showToast('Please enter your name', 'warn'); return; }
+  if (!partner) { showToast('Please enter swap partner name', 'warn'); return; }
+  if (!reviewRating) { showToast('Please give a star rating', 'warn'); return; }
+  if (!text)    { showToast('Please write a review', 'warn'); return; }
+
+  const starsHtml = Array.from({length:5}, (_,i) =>
+    `<span class="star ${i < reviewRating ? 'filled' : ''}">★</span>`
+  ).join('');
+
+  const outcomes = [...selectedOutcomes].map(o => {
+    const map = { achieved:'<span class="outcome-tag ot-learned">✅ Achieved Goal</span>',
+fun:'<span class="outcome-tag ot-fun">🎉 Enjoyed Sessions</span>',
+recommend:'<span class="outcome-tag ot-recommend">👍 Would Recommend</span>' };
+return map[o] || '';
+}).join('');
+
+  const initials = name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0,2);
+  const colors = ['var(--accent1)','var(--accent2)','#a78bfa','var(--gold)'];
+  const col = colors[Math.floor(Math.random() * colors.length)];
+
+  const card = document.createElement('div');
+  card.className = 'review-card fade-up';
+  card.dataset.stars = reviewRating;
+  card.dataset.sortRecent = '99';
+  card.dataset.sortHelpful = '0';
+  card.innerHTML = `
+    <div class="reviewer">
+      <div class="avatar" style="color:${col}">${initials}</div>
+      <div class="info">
+        <div class="name">${name}</div>
+        <div class="swap-desc">🔄 Swapped with: ${partner}</div>
+      </div>
+      <div class="time">Just now</div>
+    </div>
+    <div class="stars" style="margin-bottom:0.65rem">${starsHtml}</div>
+    <div class="review-body">${text}</div>
+    <div class="review-meta">${outcomes}<button class="helpful-btn" onclick="likeReview(this)">👍 Helpful (0)</button></div>
+  `;
+
+  document.getElementById('reviewsContainer').prepend(card);
+
+  document.getElementById('revName').value = '';
+  document.getElementById('revPartner').value = '';
+  document.getElementById('revText').value = '';
+  reviewRating = 0;
+  document.querySelectorAll('#reviewStars .star').forEach(s => s.classList.remove('filled'));
+  selectedOutcomes.clear();
+  document.querySelectorAll('#outcomePicker .filter-btn').forEach(b => b.classList.remove('active'));
+
+
+  SS.addCredits(2);
+  showToast('Review submitted! +2 credits earned 🎉');
+}
+</script>
+</body>
+</html>
